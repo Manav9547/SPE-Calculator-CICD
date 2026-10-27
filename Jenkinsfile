@@ -62,30 +62,6 @@ pipeline {
                 withCredentials([
                     usernamePassword(
                         credentialsId: 'dockerhub-credentials',
-                        usernameVariable: 'DH_USER',
-                        passwordVariable: 'DH_TOKEN'
-                    )
-                ]) {
-                    sh '''
-                        set +x
-                        echo "$DH_TOKEN" | docker login -u "$DH_USER" --password-stdin
-                        IMAGE="docker.io/manavimt2023535/spe-calculator:${BUILD_NUMBER}"
-                        docker push "$IMAGE"
-                        docker logout
-                    '''
-                }
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                sh '''
-                    IMAGE="docker.io/manavimt2023535/spe-calculator:${BUILD_NUMBER}"
-                    CALCULATOR_IMAGE="$IMAGE" docker compose -p calculator pull calculator
-                    CALCULATOR_IMAGE="$IMAGE" docker compose -p calculator up -d --no-build --force-recreate
-                '''
-            }
-        }
 
         stage('Health Check') {
             steps {
