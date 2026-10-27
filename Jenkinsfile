@@ -69,7 +69,8 @@ pipeline {
                     sh '''
                         set +x
                         echo "$DH_TOKEN" | docker login -u "$DH_USER" --password-stdin
-                        docker push "$CALCULATOR_IMAGE"
+                        IMAGE="docker.io/manavimt2023535/spe-calculator:${BUILD_NUMBER}"
+                        docker push "$IMAGE"
                         docker logout
                     '''
                 }
@@ -79,11 +80,9 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh '''
-                    CALCULATOR_IMAGE="$CALCULATOR_IMAGE" \
-                        docker compose -p calculator pull calculator
-
-                    CALCULATOR_IMAGE="$CALCULATOR_IMAGE" \
-                        docker compose -p calculator up -d --no-build --force-recreate
+                    IMAGE="docker.io/manavimt2023535/spe-calculator:${BUILD_NUMBER}"
+                    CALCULATOR_IMAGE="$IMAGE" docker compose -p calculator pull calculator
+                    CALCULATOR_IMAGE="$IMAGE" docker compose -p calculator up -d --no-build --force-recreate
                 '''
             }
         }
