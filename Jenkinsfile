@@ -1,3 +1,4 @@
+```groovy
 pipeline {
     agent any
 
@@ -11,6 +12,7 @@ pipeline {
     environment {
         DOCKERHUB_REPO = 'spe-calculator'
         DOCKERHUB_CREDENTIALS = 'dockerhub-credentials'
+        EMAIL_RECIPIENT = 'jindal9547@gmail.com'
     }
 
     stages {
@@ -114,38 +116,52 @@ pipeline {
     post {
         success {
             echo 'SPE Calculator pipeline completed successfully.'
+
             script {
                 if (env.EMAIL_RECIPIENT?.trim()) {
                     emailext(
                         to: env.EMAIL_RECIPIENT,
                         subject: "SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                        body: """Build succeeded.
-
-Job: ${env.JOB_NAME}
-Build: #${env.BUILD_NUMBER}
-Image: docker.io/manavimt2023535/spe-calculator:${env.BUILD_NUMBER}
-Details: ${env.BUILD_URL}
-"""
+                        mimeType: 'text/html',
+                        body: """
+                            <h2>Build Successful!</h2>
+                            <p><b>Project:</b> SPE Calculator CI/CD</p>
+                            <p><b>Job:</b> ${env.JOB_NAME}</p>
+                            <p><b>Build Number:</b> #${env.BUILD_NUMBER}</p>
+                            <p><b>Status:</b> SUCCESS</p>
+                            <p><b>Docker Image:</b> docker.io/manavimt2023535/spe-calculator:${env.BUILD_NUMBER}</p>
+                            <p><b>Build URL:</b> <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
+                        """
                     )
+                    echo "Success notification sent to ${env.EMAIL_RECIPIENT}"
+                } else {
+                    echo 'EMAIL_RECIPIENT is not configured. Skipping notification.'
                 }
             }
         }
 
         failure {
             echo 'SPE Calculator pipeline failed.'
+
             script {
                 if (env.EMAIL_RECIPIENT?.trim()) {
                     emailext(
                         to: env.EMAIL_RECIPIENT,
                         subject: "FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                        body: """Build failed.
-
-Job: ${env.JOB_NAME}
-Build: #${env.BUILD_NUMBER}
-Details: ${env.BUILD_URL}
-Check the Jenkins console output for details.
-"""
+                        mimeType: 'text/html',
+                        body: """
+                            <h2>Build Failed!</h2>
+                            <p><b>Project:</b> SPE Calculator CI/CD</p>
+                            <p><b>Job:</b> ${env.JOB_NAME}</p>
+                            <p><b>Build Number:</b> #${env.BUILD_NUMBER}</p>
+                            <p><b>Status:</b> FAILURE</p>
+                            <p><b>Build URL:</b> <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
+                            <p>Please check the Jenkins console output for details.</p>
+                        """
                     )
+                    echo "Failure notification sent to ${env.EMAIL_RECIPIENT}"
+                } else {
+                    echo 'EMAIL_RECIPIENT is not configured. Skipping notification.'
                 }
             }
         }
@@ -155,3 +171,4 @@ Check the Jenkins console output for details.
         }
     }
 }
+```
